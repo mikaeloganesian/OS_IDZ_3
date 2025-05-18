@@ -9,15 +9,13 @@
 #define MAX_DB_SIZE 100
 #define MAX_CLIENTS 50
 
-// Структура базы данных
 int db[MAX_DB_SIZE];
-int db_size = 10; // Начальный размер БД
+int db_size = 10; 
 pthread_mutex_t db_mutex = PTHREAD_MUTEX_INITIALIZER;
 int active_writers = 0;
 int active_readers = 0;
 pthread_mutex_t rw_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-// Функция сортировки БД
 void sort_db() {
     for (int i = 0; i < db_size - 1; i++) {
         for (int j = 0; j < db_size - i - 1; j++) {
@@ -30,7 +28,6 @@ void sort_db() {
     }
 }
 
-// Обработка клиента
 void *handle_client(void *arg) {
     int client_sock = *(int *)arg;
     char buffer[256];
@@ -39,7 +36,6 @@ void *handle_client(void *arg) {
     while ((valread = read(client_sock, buffer, 256)) > 0) {
         buffer[valread] = '\0';
         if (strncmp(buffer, "READ", 4) == 0) {
-            // Запрос на чтение
             pthread_mutex_lock(&rw_mutex);
             active_readers++;
             pthread_mutex_unlock(&rw_mutex);
@@ -56,7 +52,6 @@ void *handle_client(void *arg) {
             active_readers--;
             pthread_mutex_unlock(&rw_mutex);
         } else if (strncmp(buffer, "WRITE", 5) == 0) {
-            // Запрос на запись
             pthread_mutex_lock(&rw_mutex);
             while (active_readers > 0 || active_writers > 0) {
                 pthread_mutex_unlock(&rw_mutex);
@@ -71,7 +66,7 @@ void *handle_client(void *arg) {
             sscanf(buffer + 6, "%d %d", &index, &new_value);
             old_value = db[index];
             db[index] = new_value;
-            sort_db(); // Сортировка после записи
+            sort_db();
             pthread_mutex_unlock(&db_mutex);
 
             sprintf(buffer, "WROTE %d %d %d", index, old_value, new_value);
@@ -94,9 +89,8 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    // Инициализация БД
     for (int i = 0; i < db_size; i++) {
-        db[i] = i + 1; // Отсортированный массив
+        db[i] = i + 1; 
     }
 
     int server_fd, new_socket, *client_sock;
@@ -104,7 +98,6 @@ int main(int argc, char *argv[]) {
     int addrlen = sizeof(client_addr);
     int port = atoi(argv[2]);
 
-    // Создание сокета
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
         perror("Socket failed");
         exit(1);
@@ -114,13 +107,11 @@ int main(int argc, char *argv[]) {
     server_addr.sin_addr.s_addr = inet_addr(argv[1]);
     server_addr.sin_port = htons(port);
 
-    // Привязка сокета
     if (bind(server_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
         perror("Bind failed");
         exit(1);
     }
 
-    // Ожидание подключений
     if (listen(server_fd, MAX_CLIENTS) < 0) {
         perror("Listen failed");
         exit(1);

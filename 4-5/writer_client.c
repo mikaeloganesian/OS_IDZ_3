@@ -32,13 +32,11 @@ void writer_process(int writer_id, char *ip, int port) {
     }
 
     while (1) {
-        // Формирование запроса на запись
-        int index = rand() % 10; // Предполагаем, что размер БД 10
+        int index = rand() % 10; 
         int new_value = rand() % 100 + 1;
         sprintf(buffer, "WRITE %d %d", index, new_value);
         send(sock, buffer, strlen(buffer), 0);
 
-        // Получение ответа
         int valread = read(sock, buffer, 256);
         if (valread <= 0) break;
         buffer[valread] = '\0';
@@ -47,7 +45,7 @@ void writer_process(int writer_id, char *ip, int port) {
         sscanf(buffer, "WROTE %d %d %d", &index, &old_value, &new_value);
         printf("Writer %d (PID %d): Index %d, Old Value %d, New Value %d\n", writer_id, getpid(), index, old_value, new_value);
 
-        sleep(3); // Задержка для имитации периодичности
+        sleep(3); 
     }
 
     close(sock);
@@ -73,7 +71,6 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    // Ожидание завершения процессов
     for (int i = 0; i < num_writers; i++) {
         wait(NULL);
     }

@@ -9,7 +9,6 @@
 
 #define NUM_READERS 3
 
-// Функция вычисления числа Фибоначчи
 long long fibonacci(int n) {
     if (n <= 1) return n;
     long long a = 0, b = 1, c;
@@ -44,21 +43,19 @@ void reader_process(int reader_id, char *ip, int port) {
     }
 
     while (1) {
-        // Отправка запроса на чтение
         strcpy(buffer, "READ");
         send(sock, buffer, strlen(buffer), 0);
 
-        // Получение ответа
         int valread = read(sock, buffer, 256);
         if (valread <= 0) break;
         buffer[valread] = '\0';
 
         int index, value;
         sscanf(buffer, "VALUE %d %d", &index, &value);
-        long long fib = fibonacci(value % 20); // Ограничение для чисел Фибоначчи
+        long long fib = fibonacci(value % 20); 
         printf("Reader %d (PID %d): Index %d, Value %d, Fibonacci %lld\n", reader_id, getpid(), index, value, fib);
 
-        sleep(2); // Задержка для имитации периодичности
+        sleep(2); 
     }
 
     close(sock);
@@ -84,7 +81,6 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    // Ожидание завершения процессов
     for (int i = 0; i < num_readers; i++) {
         wait(NULL);
     }
